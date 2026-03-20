@@ -1,270 +1,699 @@
-<!DOCTYPE html>
+from pathlib import Path
+root = Path('/mnt/data/olive_quiz_pwa')
+root.mkdir(exist_ok=True)
+
+index_html = r'''<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>초등 영어 단어 도우미</title>
+  <meta name="description" content="초등학생용 영어 단어 뜻, 동의어, 짧은 예문을 쉽게 찾고 직접 단어장을 추가할 수 있는 학습 도우미 앱입니다." />
+  <meta name="theme-color" content="#2d6cdf" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="초등 영어 단어 도우미" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="초등 영어 단어 도우미" />
+  <meta property="og:description" content="영어 단어를 입력하면 뜻, 동의어, 짧은 예문을 바로 확인하는 초등 영어 학습 앱" />
+  <meta property="og:image" content="https://oracle2boys-maker.github.io/olive_quiz/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://oracle2boys-maker.github.io/olive_quiz/" />
+  <meta property="og:site_name" content="초등 영어 단어 도우미" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="초등 영어 단어 도우미" />
+  <meta name="twitter:description" content="영어 단어를 입력하면 뜻, 동의어, 짧은 예문을 바로 확인하는 초등 영어 학습 앱" />
+  <meta name="twitter:image" content="https://oracle2boys-maker.github.io/olive_quiz/og-image.png" />
+
+  <link rel="icon" type="image/png" sizes="512x512" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" href="manifest.json" />
+
   <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --line: #d9e3f1;
+      --primary: #2d6cdf;
+      --primary-dark: #1f57ba;
+      --text: #1d3557;
+      --sub: #5b6b82;
+      --warn-bg: #fff5f5;
+      --warn-line: #f5c2c7;
+      --shadow: 0 12px 28px rgba(25, 56, 118, 0.12);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
+      font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: linear-gradient(180deg, #eef5ff 0%, var(--bg) 100%);
       margin: 0;
-      padding: 24px;
+      color: #1f2d3d;
     }
-    .container {
-      max-width: 900px;
+
+    .page {
+      max-width: 980px;
       margin: 0 auto;
-      background: white;
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 24px 16px 56px;
     }
-    h1, h2 {
-      margin-top: 0;
-    }
-    textarea, input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      border: 1px solid #cfd8e3;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-top: 8px;
-    }
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-    button {
-      margin-top: 12px;
-      padding: 12px 18px;
-      border: none;
-      border-radius: 10px;
-      background: #2d6cdf;
+
+    .hero {
+      background: linear-gradient(135deg, #3f86ff 0%, #5ecbff 100%);
       color: white;
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .hero img {
+      width: 92px;
+      height: 92px;
+      border-radius: 22px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.15);
+    }
+
+    .hero h1 {
+      margin: 0 0 6px;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.08;
+    }
+
+    .hero p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.6;
+      opacity: 0.96;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
       font-size: 16px;
       cursor: pointer;
+      transition: transform .15s ease, background .15s ease;
     }
-    button:hover {
-      background: #1f57ba;
+
+    .button:hover { transform: translateY(-1px); }
+
+    .button-primary {
+      background: white;
+      color: var(--primary);
+      font-weight: 700;
     }
-    .card {
-      margin-top: 16px;
-      padding: 16px;
-      border: 1px solid #e6ebf2;
-      border-radius: 12px;
-      background: #fafcff;
+
+    .button-secondary {
+      background: rgba(255,255,255,0.18);
+      color: white;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.28);
     }
-    .word {
+
+    .button-main {
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+
+    .button-main:hover { background: var(--primary-dark); }
+
+    .section {
+      background: var(--card);
+      border-radius: var(--radius);
+      margin-top: 18px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(201,215,233,0.55);
+    }
+
+    .section h2 {
+      margin: 0 0 10px;
       font-size: 22px;
-      font-weight: bold;
-      color: #1d3557;
-      margin-bottom: 8px;
+      color: var(--text);
     }
-    .label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
+
     .small {
-      color: #666;
+      color: var(--sub);
       font-size: 14px;
+      line-height: 1.5;
+      margin: 0 0 12px;
     }
-    .divider {
-      height: 1px;
-      background: #edf2f7;
-      margin: 18px 0;
+
+    textarea, input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      font-size: 17px;
+      padding: 14px 15px;
+      margin-top: 10px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+      background: #fbfdff;
     }
-    .missing {
-      background: #fff5f5;
-      border: 1px solid #f5c2c7;
+
+    textarea:focus, input:focus {
+      border-color: #78a4ff;
+      box-shadow: 0 0 0 4px rgba(45,108,223,0.12);
     }
-    .success-box {
+
+    textarea {
+      min-height: 128px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.3fr .95fr;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .card {
+      background: #fafcff;
+      border: 1px solid #e6eef8;
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card.missing {
+      background: var(--warn-bg);
+      border-color: var(--warn-line);
+    }
+
+    .word {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-weight: 800;
+      color: #27476f;
+    }
+
+    .examples div {
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .tip-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .tip-item {
+      background: #f7fbff;
+      border: 1px solid #ddeaf8;
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: #35506d;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--sub);
+      font-size: 13px;
       margin-top: 20px;
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+        justify-items: center;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>초등 영어 단어 도우미</h1>
-    <p class="small">쉼표(,)나 줄바꿈으로 단어를 여러 개 넣을 수 있어요.</p>
+  <main class="page">
+    <section class="hero">
+      <img src="icon.png" alt="초등 영어 단어 도우미 앱 아이콘" />
+      <div>
+        <h1>초등 영어<br>단어 도우미</h1>
+        <p>영어 단어를 입력하면 한국어 뜻, 동의어, 짧은 예문을 확인하고 선생님만의 단어장을 직접 추가할 수 있어요.</p>
+        <div class="hero-actions">
+          <button id="installButton" class="button button-primary" hidden>앱 설치하기</button>
+          <a class="button button-secondary" href="#searchSection">바로 시작하기</a>
+        </div>
+      </div>
+    </section>
 
-    <textarea id="wordInput" placeholder="예:
+    <section class="section grid" id="searchSection">
+      <div>
+        <h2>단어 찾기</h2>
+        <p class="small">쉼표(,)나 줄바꿈으로 여러 단어를 입력할 수 있어요. 예: apple, plum, hilarious</p>
+        <textarea id="wordInput" placeholder="예:
 apple
 plum
 vibe
 hilarious"></textarea>
-    <button onclick="searchWords()">단어 찾기</button>
+        <button id="searchButton" class="button button-main" type="button">단어 찾기</button>
+        <div id="result" class="result-list" aria-live="polite"></div>
+      </div>
 
-    <div id="result" class="success-box"></div>
-
-    <div class="divider"></div>
-
-    <h2>새 단어 추가</h2>
-    <input id="newWord" placeholder="단어" />
-    <input id="newMeaning" placeholder="한국어 뜻" />
-    <input id="newSynonyms" placeholder="동의어 (쉼표로 구분)" />
-    <textarea id="newExamples" placeholder="예문을 한 줄에 하나씩 입력하세요."></textarea>
-    <button onclick="addWord()">사전에 추가</button>
-  </div>
-
-  <script>
-    const defaultDictionary = {
-      apple: {
-        meaning: "사과",
-        synonyms: ["fruit"],
-        examples: ["I eat an apple.", "The apple is red."]
-      },
-      plum: {
-        meaning: "자두",
-        synonyms: ["fruit"],
-        examples: ["This plum is sweet.", "I like purple plums."]
-      },
-      vibe: {
-        meaning: "분위기, 느낌",
-        synonyms: ["feeling", "mood"],
-        examples: ["The room has a happy vibe.", "I like the calm vibe here."]
-      },
-      hilarious: {
-        meaning: "아주 웃긴",
-        synonyms: ["funny", "amusing"],
-        examples: ["The story is hilarious.", "He is a hilarious boy."]
-      },
-      run: {
-        meaning: "달리다",
-        synonyms: ["jog", "race"],
-        examples: ["I run in the park.", "The dog can run fast."]
-      },
-      happy: {
-        meaning: "행복한",
-        synonyms: ["glad", "joyful"],
-        examples: ["I am happy today.", "She has a happy smile."]
-      },
-      clean: {
-        meaning: "깨끗한, 청소하다",
-        synonyms: ["tidy", "wash"],
-        examples: ["My room is clean.", "Please clean the desk."]
-      },
-      jump: {
-        meaning: "점프하다, 뛰어오르다",
-        synonyms: ["hop", "leap"],
-        examples: ["The boy can jump high.", "Jump over the line."]
-      }
-    };
-
-    function loadDictionary() {
-      const saved = localStorage.getItem("teacherDictionary");
-      if (!saved) return { ...defaultDictionary };
-
-      try {
-        return { ...defaultDictionary, ...JSON.parse(saved) };
-      } catch (e) {
-        return { ...defaultDictionary };
-      }
-    }
-
-    function saveDictionary(dict) {
-      localStorage.setItem("teacherDictionary", JSON.stringify(dict));
-    }
-
-    function normalizeWord(word) {
-      return word.trim().toLowerCase();
-    }
-
-    function renderWordCard(word, data) {
-      return `
-        <div class="card">
-          <div class="word">${word}</div>
-
-          <span class="label">뜻</span>
-          <div>${data.meaning}</div>
-
-          <span class="label">동의어</span>
-          <div>${data.synonyms && data.synonyms.length ? data.synonyms.join(", ") : "-"}</div>
-
-          <span class="label">짧은 예문</span>
-          <div>
-            ${(data.examples || []).map(ex => `<div>- ${ex}</div>`).join("")}
-          </div>
+      <div>
+        <h2>수업 팁</h2>
+        <div class="tip-list">
+          <div class="tip-item">학생들이 자주 틀리는 단어는 아래에서 직접 추가해서 나만의 단어장으로 쌓아둘 수 있어요.</div>
+          <div class="tip-item">입력 예문은 한 줄에 하나씩 적으면 카드에 그대로 보여요.</div>
+          <div class="tip-item">앱으로 설치하면 휴대폰 홈 화면에서 바로 열 수 있어요.</div>
         </div>
-      `;
-    }
+      </div>
+    </section>
 
-    function renderMissingCard(word) {
-      return `
-        <div class="card missing">
-          <div class="word">${word}</div>
-          <div>사전에 없는 단어예요. 아래의 "새 단어 추가"에서 직접 넣어 주세요.</div>
-        </div>
-      `;
-    }
+    <section class="section">
+      <h2>새 단어 추가</h2>
+      <p class="small">없는 단어는 직접 저장해서 다음부터 바로 불러오게 할 수 있어요.</p>
+      <input id="newWord" placeholder="단어" />
+      <input id="newMeaning" placeholder="한국어 뜻" />
+      <input id="newSynonyms" placeholder="동의어 (쉼표로 구분)" />
+      <textarea id="newExamples" placeholder="예문을 한 줄에 하나씩 입력하세요."></textarea>
+      <button id="addButton" class="button button-main" type="button">사전에 추가</button>
+      <p class="footer-note">GitHub Pages + PWA 지원 버전</p>
+    </section>
+  </main>
 
-    function searchWords() {
-      const dict = loadDictionary();
-      const raw = document.getElementById("wordInput").value;
-
-      const words = raw
-        .split(/[\n,]+/)
-        .map(normalizeWord)
-        .filter(Boolean);
-
-      const result = document.getElementById("result");
-
-      if (words.length === 0) {
-        result.innerHTML = "<div class='card missing'>단어를 먼저 입력해 주세요.</div>";
-        return;
-      }
-
-      let html = "<h2>검색 결과</h2>";
-
-      words.forEach(word => {
-        if (dict[word]) {
-          html += renderWordCard(word, dict[word]);
-        } else {
-          html += renderMissingCard(word);
-        }
-      });
-
-      result.innerHTML = html;
-      result.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function addWord() {
-      const dict = loadDictionary();
-
-      const word = normalizeWord(document.getElementById("newWord").value);
-      const meaning = document.getElementById("newMeaning").value.trim();
-      const synonyms = document.getElementById("newSynonyms").value
-        .split(",")
-        .map(v => v.trim())
-        .filter(Boolean);
-
-      const examples = document.getElementById("newExamples").value
-        .split("\n")
-        .map(v => v.trim())
-        .filter(Boolean);
-
-      if (!word || !meaning || examples.length === 0) {
-        alert("단어, 뜻, 예문은 꼭 입력해 주세요.");
-        return;
-      }
-
-      dict[word] = {
-        meaning,
-        synonyms,
-        examples
-      };
-
-      saveDictionary(dict);
-
-      document.getElementById("newWord").value = "";
-      document.getElementById("newMeaning").value = "";
-      document.getElementById("newSynonyms").value = "";
-      document.getElementById("newExamples").value = "";
-
-      alert("사전에 저장했어요.");
-      searchWords();
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
+'''
+
+app_js = r'''const defaultDictionary = {
+  apple: {
+    meaning: "사과",
+    synonyms: ["fruit", "snack"],
+    examples: ["I eat an apple.", "The apple is red."]
+  },
+  plum: {
+    meaning: "자두",
+    synonyms: ["fruit"],
+    examples: ["This plum is sweet.", "I like purple plums."]
+  },
+  vibe: {
+    meaning: "분위기, 느낌",
+    synonyms: ["feeling", "mood"],
+    examples: ["The room has a happy vibe.", "I like the calm vibe here."]
+  },
+  hilarious: {
+    meaning: "아주 웃긴",
+    synonyms: ["funny", "amusing"],
+    examples: ["The story is hilarious.", "He is a hilarious boy."]
+  },
+  run: {
+    meaning: "달리다",
+    synonyms: ["jog", "race"],
+    examples: ["I run in the park.", "The dog can run fast."]
+  },
+  happy: {
+    meaning: "행복한",
+    synonyms: ["glad", "joyful"],
+    examples: ["I am happy today.", "She has a happy smile."]
+  },
+  clean: {
+    meaning: "깨끗한, 청소하다",
+    synonyms: ["tidy", "wash"],
+    examples: ["My room is clean.", "Please clean the desk."]
+  },
+  jump: {
+    meaning: "점프하다, 뛰어오르다",
+    synonyms: ["hop", "leap"],
+    examples: ["The boy can jump high.", "Jump over the line."]
+  },
+  slice: {
+    meaning: "얇게 자르다, 조각",
+    synonyms: ["cut", "piece"],
+    examples: ["Slice the bread, please.", "I ate a slice of pizza."]
+  },
+  globe: {
+    meaning: "지구본",
+    synonyms: ["world model", "earth model"],
+    examples: ["We saw a globe in class.", "The globe is on the desk."]
+  },
+  sleep: {
+    meaning: "잠자다",
+    synonyms: ["rest", "doze"],
+    examples: ["I sleep at nine.", "The baby is sleeping."]
+  },
+  class: {
+    meaning: "수업, 반",
+    synonyms: ["lesson", "group"],
+    examples: ["Our class starts at ten.", "She is in my class."]
+  }
+};
+
+const STORAGE_KEY = "teacherDictionary";
+let deferredPrompt = null;
+
+function loadDictionary() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return { ...defaultDictionary };
+
+  try {
+    return { ...defaultDictionary, ...JSON.parse(saved) };
+  } catch (error) {
+    console.error("사전 데이터를 불러오는 중 오류:", error);
+    return { ...defaultDictionary };
+  }
+}
+
+function saveDictionary(dictionary) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(dictionary));
+}
+
+function normalizeWord(word) {
+  return word.trim().toLowerCase();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function renderWordCard(word, data) {
+  const synonyms = Array.isArray(data.synonyms) && data.synonyms.length
+    ? data.synonyms.join(", ")
+    : "-";
+
+  const examples = Array.isArray(data.examples) && data.examples.length
+    ? data.examples.map(example => `<div>- ${escapeHtml(example)}</div>`).join("")
+    : "<div>- 예문이 아직 없어요.</div>";
+
+  return `
+    <article class="card">
+      <div class="word">${escapeHtml(word)}</div>
+      <span class="label">뜻</span>
+      <div>${escapeHtml(data.meaning || "-")}</div>
+
+      <span class="label">동의어</span>
+      <div>${escapeHtml(synonyms)}</div>
+
+      <span class="label">짧은 예문</span>
+      <div class="examples">${examples}</div>
+    </article>
+  `;
+}
+
+function renderMissingCard(word) {
+  return `
+    <article class="card missing">
+      <div class="word">${escapeHtml(word)}</div>
+      <div>사전에 없는 단어예요. 아래의 "새 단어 추가" 영역에서 직접 넣어 주세요.</div>
+    </article>
+  `;
+}
+
+function searchWords() {
+  const dictionary = loadDictionary();
+  const raw = document.getElementById("wordInput").value;
+
+  const words = raw
+    .split(/[\n,]+/)
+    .map(normalizeWord)
+    .filter(Boolean);
+
+  const result = document.getElementById("result");
+
+  if (!words.length) {
+    result.innerHTML = `<article class="card missing">단어를 먼저 입력해 주세요.</article>`;
+    return;
+  }
+
+  const html = words.map(word => dictionary[word] ? renderWordCard(word, dictionary[word]) : renderMissingCard(word)).join("");
+  result.innerHTML = html;
+  result.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function addWord() {
+  const dictionary = loadDictionary();
+
+  const word = normalizeWord(document.getElementById("newWord").value);
+  const meaning = document.getElementById("newMeaning").value.trim();
+  const synonyms = document.getElementById("newSynonyms").value
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  const examples = document.getElementById("newExamples").value
+    .split("\n")
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  if (!word || !meaning || !examples.length) {
+    alert("단어, 뜻, 예문은 꼭 입력해 주세요.");
+    return;
+  }
+
+  dictionary[word] = {
+    meaning,
+    synonyms,
+    examples
+  };
+
+  saveDictionary(dictionary);
+
+  document.getElementById("newWord").value = "";
+  document.getElementById("newMeaning").value = "";
+  document.getElementById("newSynonyms").value = "";
+  document.getElementById("newExamples").value = "";
+
+  alert("사전에 저장했어요.");
+  document.getElementById("wordInput").value = word;
+  searchWords();
+}
+
+function setupInstallPrompt() {
+  const installButton = document.getElementById("installButton");
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    installButton.hidden = false;
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installButton.hidden = true;
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installButton.hidden = true;
+    deferredPrompt = null;
+  });
+}
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  try {
+    await navigator.serviceWorker.register("./sw.js");
+    console.log("Service Worker 등록 완료");
+  } catch (error) {
+    console.error("Service Worker 등록 실패:", error);
+  }
+}
+
+function setupEvents() {
+  document.getElementById("searchButton").addEventListener("click", searchWords);
+  document.getElementById("addButton").addEventListener("click", addWord);
+
+  document.getElementById("wordInput").addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      searchWords();
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupEvents();
+  setupInstallPrompt();
+  registerServiceWorker();
+});
+'''
+
+manifest = r'''{
+  "name": "초등 영어 단어 도우미",
+  "short_name": "영어단어도우미",
+  "description": "초등학생 영어 수업용 단어 뜻, 동의어, 짧은 예문 학습 앱",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#2d6cdf",
+  "lang": "ko",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
+'''
+
+sw = r'''const CACHE_NAME = "olive-quiz-pwa-v1";
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./app.js",
+  "./manifest.json",
+  "./icon.png",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./og-image.png"
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+
+      return fetch(event.request)
+        .then((networkResponse) => {
+          const cloned = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, cloned);
+          });
+          return networkResponse;
+        })
+        .catch(() => caches.match("./index.html"));
+    })
+  );
+});
+'''
+
+readme = r'''# olive_quiz
+
+초등 영어 단어 도우미 PWA
+
+## 포함 파일
+- index.html
+- app.js
+- manifest.json
+- sw.js
+- icon.png
+- icon-192.png
+- icon-512.png
+- og-image.png
+
+## GitHub Pages 적용
+1. 기존 `index.htm` 대신 `index.html` 업로드
+2. 위 파일들을 저장소 루트에 함께 업로드
+3. Settings → Pages 에서 배포 브랜치가 `main / root`인지 확인
+4. 배포 후 `https://oracle2boys-maker.github.io/olive_quiz/` 접속
+5. 캐시 때문에 이전 화면이 보이면 `Ctrl + F5`
+
+## 기능
+- 단어 뜻 / 동의어 / 짧은 예문 보기
+- 직접 단어 추가
+- 홈 화면 설치 가능한 PWA
+- 오프라인 캐시
+- Open Graph 썸네일 적용
+'''
+
+(root / 'index.html').write_text(index_html, encoding='utf-8')
+(root / 'app.js').write_text(app_js, encoding='utf-8')
+(root / 'manifest.json').write_text(manifest, encoding='utf-8')
+(root / 'sw.js').write_text(sw, encoding='utf-8')
+(root / 'README.md').write_text(readme, encoding='utf-8')
+
+# Copy images
+from shutil import copy2
+for src, dest in [
+    ('/mnt/data/icon.png', root / 'icon.png'),
+    ('/mnt/data/icon-192.png', root / 'icon-192.png'),
+    ('/mnt/data/icon-512.png', root / 'icon-512.png'),
+    ('/mnt/data/og-image.png', root / 'og-image.png'),
+]:
+    copy2(src, dest)
+
+# Zip
+import zipfile, os
+zip_path = '/mnt/data/olive_quiz_pwa_files.zip'
+with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
+    for file in root.iterdir():
+        z.write(file, arcname=file.name)
+
+list(root.iterdir()), zip_path
