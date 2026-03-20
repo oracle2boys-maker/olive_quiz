@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>초등 영어 단어 도우미</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 24px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    h1, h2 {
+      margin-top: 0;
+    }
+    textarea, input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #cfd8e3;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 12px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #2d6cdf;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1f57ba;
+    }
+    .card {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid #e6ebf2;
+      border-radius: 12px;
+      background: #fafcff;
+    }
+    .word {
+      font-size: 22px;
+      font-weight: bold;
+      color: #1d3557;
+      margin-bottom: 8px;
+    }
+    .label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    .small {
+      color: #666;
+      font-size: 14px;
+    }
+    .divider {
+      height: 1px;
+      background: #edf2f7;
+      margin: 18px 0;
+    }
+    .missing {
+      background: #fff5f5;
+      border: 1px solid #f5c2c7;
+    }
+    .success-box {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>초등 영어 단어 도우미</h1>
+    <p class="small">쉼표(,)나 줄바꿈으로 단어를 여러 개 넣을 수 있어요.</p>
+
+    <textarea id="wordInput" placeholder="예:
+apple
+plum
+vibe
+hilarious"></textarea>
+    <button onclick="searchWords()">단어 찾기</button>
+
+    <div id="result" class="success-box"></div>
+
+    <div class="divider"></div>
+
+    <h2>새 단어 추가</h2>
+    <input id="newWord" placeholder="단어" />
+    <input id="newMeaning" placeholder="한국어 뜻" />
+    <input id="newSynonyms" placeholder="동의어 (쉼표로 구분)" />
+    <textarea id="newExamples" placeholder="예문을 한 줄에 하나씩 입력하세요."></textarea>
+    <button onclick="addWord()">사전에 추가</button>
+  </div>
+
+  <script>
+    const defaultDictionary = {
+      apple: {
+        meaning: "사과",
+        synonyms: ["fruit"],
+        examples: ["I eat an apple.", "The apple is red."]
+      },
+      plum: {
+        meaning: "자두",
+        synonyms: ["fruit"],
+        examples: ["This plum is sweet.", "I like purple plums."]
+      },
+      vibe: {
+        meaning: "분위기, 느낌",
+        synonyms: ["feeling", "mood"],
+        examples: ["The room has a happy vibe.", "I like the calm vibe here."]
+      },
+      hilarious: {
+        meaning: "아주 웃긴",
+        synonyms: ["funny", "amusing"],
+        examples: ["The story is hilarious.", "He is a hilarious boy."]
+      },
+      run: {
+        meaning: "달리다",
+        synonyms: ["jog", "race"],
+        examples: ["I run in the park.", "The dog can run fast."]
+      },
+      happy: {
+        meaning: "행복한",
+        synonyms: ["glad", "joyful"],
+        examples: ["I am happy today.", "She has a happy smile."]
+      },
+      clean: {
+        meaning: "깨끗한, 청소하다",
+        synonyms: ["tidy", "wash"],
+        examples: ["My room is clean.", "Please clean the desk."]
+      },
+      jump: {
+        meaning: "점프하다, 뛰어오르다",
+        synonyms: ["hop", "leap"],
+        examples: ["The boy can jump high.", "Jump over the line."]
+      }
+    };
+
+    function loadDictionary() {
+      const saved = localStorage.getItem("teacherDictionary");
+      if (!saved) return { ...defaultDictionary };
+
+      try {
+        return { ...defaultDictionary, ...JSON.parse(saved) };
+      } catch (e) {
+        return { ...defaultDictionary };
+      }
+    }
+
+    function saveDictionary(dict) {
+      localStorage.setItem("teacherDictionary", JSON.stringify(dict));
+    }
+
+    function normalizeWord(word) {
+      return word.trim().toLowerCase();
+    }
+
+    function renderWordCard(word, data) {
+      return `
+        <div class="card">
+          <div class="word">${word}</div>
+
+          <span class="label">뜻</span>
+          <div>${data.meaning}</div>
+
+          <span class="label">동의어</span>
+          <div>${data.synonyms && data.synonyms.length ? data.synonyms.join(", ") : "-"}</div>
+
+          <span class="label">짧은 예문</span>
+          <div>
+            ${(data.examples || []).map(ex => `<div>- ${ex}</div>`).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMissingCard(word) {
+      return `
+        <div class="card missing">
+          <div class="word">${word}</div>
+          <div>사전에 없는 단어예요. 아래의 "새 단어 추가"에서 직접 넣어 주세요.</div>
+        </div>
+      `;
+    }
+
+    function searchWords() {
+      const dict = loadDictionary();
+      const raw = document.getElementById("wordInput").value;
+
+      const words = raw
+        .split(/[\n,]+/)
+        .map(normalizeWord)
+        .filter(Boolean);
+
+      const result = document.getElementById("result");
+
+      if (words.length === 0) {
+        result.innerHTML = "<div class='card missing'>단어를 먼저 입력해 주세요.</div>";
+        return;
+      }
+
+      let html = "<h2>검색 결과</h2>";
+
+      words.forEach(word => {
+        if (dict[word]) {
+          html += renderWordCard(word, dict[word]);
+        } else {
+          html += renderMissingCard(word);
+        }
+      });
+
+      result.innerHTML = html;
+      result.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function addWord() {
+      const dict = loadDictionary();
+
+      const word = normalizeWord(document.getElementById("newWord").value);
+      const meaning = document.getElementById("newMeaning").value.trim();
+      const synonyms = document.getElementById("newSynonyms").value
+        .split(",")
+        .map(v => v.trim())
+        .filter(Boolean);
+
+      const examples = document.getElementById("newExamples").value
+        .split("\n")
+        .map(v => v.trim())
+        .filter(Boolean);
+
+      if (!word || !meaning || examples.length === 0) {
+        alert("단어, 뜻, 예문은 꼭 입력해 주세요.");
+        return;
+      }
+
+      dict[word] = {
+        meaning,
+        synonyms,
+        examples
+      };
+
+      saveDictionary(dict);
+
+      document.getElementById("newWord").value = "";
+      document.getElementById("newMeaning").value = "";
+      document.getElementById("newSynonyms").value = "";
+      document.getElementById("newExamples").value = "";
+
+      alert("사전에 저장했어요.");
+      searchWords();
+    }
+  </script>
+</body>
+</html>
